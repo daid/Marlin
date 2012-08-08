@@ -540,6 +540,16 @@ struct directoryEntry {
            /** 32-bit unsigned holding this file's size in bytes. */
   uint32_t fileSize;
 };
+struct directoryVFATEntry {
+	uint8_t  sequenceNumber;
+	uint16_t name1[5];//UTF-16
+	uint8_t  attributes;
+	uint8_t  reservedNT;
+	uint8_t  checksum;
+	uint16_t name2[6];//UTF-16
+	uint16_t firstClusterLow;
+	uint16_t name3[2];//UTF-16
+};
 //------------------------------------------------------------------------------
 // Definitions for directory entries
 //
