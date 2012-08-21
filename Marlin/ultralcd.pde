@@ -408,16 +408,6 @@ void MainMenu::showStatus()
 			oldtime = time;
 		}
 	}
-	static int oldzpos = 0;
-	int currentz = current_position[2] * 100;
-	if ((currentz != oldzpos) || force_lcd_update)
-	{
-		lcd.setCursor(10, 1);
-		lcdprintPGM("Z:");
-		lcd.print(ftostr52(current_position[2]));
-		oldzpos = currentz;
-	}
-
 	static int oldfeedmultiply = 0;
 	int curfeedmultiply = feedmultiply;
 
@@ -442,6 +432,7 @@ void MainMenu::showStatus()
 	{
 		oldfeedmultiply = curfeedmultiply;
 		lcd.setCursor(0, 2);
+		lcdprintPGM("Speed: ");
 		lcd.print(itostr3(curfeedmultiply));
 		lcdprintPGM("% ");
 	}
@@ -458,11 +449,16 @@ void MainMenu::showStatus()
 #ifdef SDSUPPORT
 	static uint8_t oldpercent = 101;
 	uint8_t percent = card.percentDone();
-	if (oldpercent != percent || force_lcd_update)
+	if ((oldpercent != percent || force_lcd_update))
 	{
-		lcd.setCursor(10, 2);
-		lcd.print(itostr3((int) percent));
-		lcdprintPGM("%SD");
+		lcd.setCursor(10, 1);
+		if (IS_SD_PRINTING)
+		{
+			lcd.print(itostr3((int) percent));
+			lcdprintPGM("%SD");
+		}else{
+			lcdprintPGM("      ");
+  		}
 	}
 #endif
 	force_lcd_update = false;
@@ -545,7 +541,7 @@ void MainMenu::showSD()
 						lcd.print("\005");
 					if (card.longFilename[0])
 					{
-						card.longFilename[LCD_WIDTH] = '\0';
+						card.longFilename[LCD_WIDTH-1] = '\0';
 						lcd.print(card.longFilename);
 					}
 					else
@@ -575,7 +571,7 @@ void MainMenu::showSD()
 						status = Main_Status;
 						if (card.longFilename[0])
 						{
-							card.longFilename[LCD_WIDTH] = '\0';
+							card.longFilename[LCD_WIDTH-1] = '\0';
 							lcd_status(card.longFilename);
 						}
 						else
@@ -600,7 +596,6 @@ void MainMenu::showSD()
 void MainMenu::update()
 {
 	static MainStatus oldstatus = Main_Status;	//init automatically causes foce_lcd_update=true
-	static long timeoutToStatus = 0;
 	static bool oldcardstatus = false;
 #ifdef CARDINSERTED
 	if ((CARDINSERTED != oldcardstatus))
@@ -630,8 +625,6 @@ void MainMenu::update()
 
 		oldstatus = status;
 	}
-	if ((encoderpos != lastencoderpos) || CLICKED)
-		timeoutToStatus = millis() + STATUSTIMEOUT;
 
 	switch (status)
 	{
@@ -655,8 +648,6 @@ void MainMenu::update()
 		break;
 	}
 
-	if (timeoutToStatus < millis())
-		status = Main_Status;
 	//force_lcd_update=false;
 	lastencoderpos = encoderpos;
 }

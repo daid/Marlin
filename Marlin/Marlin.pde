@@ -489,10 +489,10 @@ void get_command()
         sprintf(time,"%i min, %i sec",min,sec);
         SERIAL_ECHO_START;
         SERIAL_ECHOLN(time);
-        LCD_MESSAGE(time);
         card.printingHasFinished();
+        LCD_MESSAGEPGM("Print finished");
         card.checkautostart(true);
-        
+        starttime = 0;
       }
       if(!serial_count)
       {
@@ -753,6 +753,24 @@ void process_commands()
            }
         }
       }
+      break;
+    case 192: // G192 - Jog
+      if(!code_seen(axis_codes[E_AXIS]))
+        st_synchronize();
+      for(int8_t i=0; i < NUM_AXIS; i++) {
+        destination[i] = current_position[i];
+        if(code_seen(axis_codes[i])) { 
+           if(i == E_AXIS) {
+             current_position[i] -= code_value();  
+             plan_set_e_position(current_position[E_AXIS]);
+           }
+           else {
+             current_position[i] -= code_value();  
+             plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+           }
+        }
+      }
+      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
       break;
     }
   }
@@ -1132,7 +1150,7 @@ void process_commands()
               disable_e2();
             }
           #endif 
-          LCD_MESSAGEPGM(MSG_PART_RELEASE);
+          //LCD_MESSAGEPGM(MSG_PART_RELEASE);
         }
       }
       break;
