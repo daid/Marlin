@@ -22,6 +22,8 @@
 
 #ifndef SdFatStructs_h
 #define SdFatStructs_h
+
+#define PACKED __attribute__((__packed__))
 /**
  * \file
  * \brief FAT file structures
@@ -95,7 +97,7 @@ struct partitionTable {
   uint32_t firstSector;
            /** Length of the partition, in blocks. */
   uint32_t totalSectors;
-};
+} PACKED;
 /** Type name for partitionTable */
 typedef struct partitionTable part_t;
 //------------------------------------------------------------------------------
@@ -119,7 +121,7 @@ struct masterBootRecord {
   uint8_t  mbrSig0;
            /** Second MBR signature byte. Must be 0XAA */
   uint8_t  mbrSig1;
-};
+} PACKED;
 /** Type name for masterBootRecord */
 typedef struct masterBootRecord mbr_t;
 //------------------------------------------------------------------------------
@@ -247,7 +249,7 @@ struct fat_boot {
   uint8_t  bootSectorSig0;
            /** must be 0XAA */
   uint8_t  bootSectorSig1;
-};
+} PACKED;
 /** Type name for FAT Boot Sector */
 typedef struct fat_boot fat_boot_t;
 //------------------------------------------------------------------------------
@@ -401,7 +403,7 @@ struct fat32_boot {
   uint8_t  bootSectorSig0;
            /** must be 0XAA */
   uint8_t  bootSectorSig1;
-};
+} PACKED;
 /** Type name for FAT32 Boot Sector */
 typedef struct fat32_boot fat32_boot_t;
 //------------------------------------------------------------------------------
@@ -441,7 +443,7 @@ struct fat32_fsinfo {
   uint8_t  reserved2[12];
            /** must be 0X00, 0X00, 0X55, 0XAA */
   uint8_t  tailSignature[4];
-};
+} PACKED;
 /** Type name for FAT32 FSINFO Sector */
 typedef struct fat32_fsinfo fat32_fsinfo_t;
 //------------------------------------------------------------------------------
@@ -539,7 +541,7 @@ struct directoryEntry {
   uint16_t firstClusterLow;
            /** 32-bit unsigned holding this file's size in bytes. */
   uint32_t fileSize;
-};
+} PACKED;
 struct directoryVFATEntry {
 	uint8_t  sequenceNumber;
 	uint16_t name1[5];//UTF-16
@@ -549,7 +551,7 @@ struct directoryVFATEntry {
 	uint16_t name2[6];//UTF-16
 	uint16_t firstClusterLow;
 	uint16_t name3[2];//UTF-16
-};
+} PACKED;
 //------------------------------------------------------------------------------
 // Definitions for directory entries
 //

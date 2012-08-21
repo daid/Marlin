@@ -543,7 +543,10 @@ void MainMenu::showSD()
 					lcdprintPGM(" ");
 					if (card.filenameIsDir)
 						lcd.print("\005");
-					lcd.print(card.filename);
+					if (card.longFilename[0])
+						lcd.print(card.longFilename);
+					else
+						lcd.print(card.filename);
 				}
 				if ((activeline == line) && CLICKED)
 				{
@@ -567,7 +570,10 @@ void MainMenu::showSD()
 						enquecommand("M24");
 						beep();
 						status = Main_Status;
-						lcd_status(card.filename);
+						if (card.longFilename[0])
+							lcd_status(card.longFilename);
+						else
+							lcd_status(card.filename);
 					}
 				}
 			}
