@@ -1117,6 +1117,7 @@ int8_t SdBaseFile::readDir(dir_t* dir, char* longFilename) {
   if (longFilename != NULL)
   {
   	longFilename[0] = '\0';
+  	longFilename[13*2] = '\0';
   }
 
   while (1) {
@@ -1146,6 +1147,8 @@ int8_t SdBaseFile::readDir(dir_t* dir, char* longFilename) {
 			longFilename[n+10] = VFAT->name2[5];
 			longFilename[n+11] = VFAT->name3[0];
 			longFilename[n+12] = VFAT->name3[1];
+			if (VFAT->sequenceNumber & 0x40)
+				longFilename[n+13] = '\0';
 		}
     }
     // return if normal file or subdirectory

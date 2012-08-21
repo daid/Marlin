@@ -503,7 +503,7 @@ void MainMenu::showSD()
 				lcdprintPGM(MSG_MAIN)
 			,
 				BLOCK;
-				 status = Main_Menu;
+				 status = Main_Status;
 				 beepshort();
 			);
 			break;
@@ -544,7 +544,10 @@ void MainMenu::showSD()
 					if (card.filenameIsDir)
 						lcd.print("\005");
 					if (card.longFilename[0])
+					{
+						card.longFilename[LCD_WIDTH] = '\0';
 						lcd.print(card.longFilename);
+					}
 					else
 						lcd.print(card.filename);
 				}
@@ -571,7 +574,10 @@ void MainMenu::showSD()
 						beep();
 						status = Main_Status;
 						if (card.longFilename[0])
+						{
+							card.longFilename[LCD_WIDTH] = '\0';
 							lcd_status(card.longFilename);
+						}
 						else
 							lcd_status(card.filename);
 					}
@@ -593,7 +599,7 @@ void MainMenu::showSD()
 
 void MainMenu::update()
 {
-	static MainStatus oldstatus = Main_Menu;	//init automatically causes foce_lcd_update=true
+	static MainStatus oldstatus = Main_Status;	//init automatically causes foce_lcd_update=true
 	static long timeoutToStatus = 0;
 	static bool oldcardstatus = false;
 #ifdef CARDINSERTED

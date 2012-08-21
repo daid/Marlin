@@ -45,8 +45,8 @@ public:
   bool saving;
   bool sdprinting ;  
   bool cardOK ;
-  char filename[12];
-  char longFilename[13*2];
+  char filename[13];
+  char longFilename[13*2+1];
   bool filenameIsDir;
   int lastnr; //last number of the autostart;
 private:
