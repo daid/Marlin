@@ -542,21 +542,45 @@ struct directoryEntry {
            /** 32-bit unsigned holding this file's size in bytes. */
   uint32_t fileSize;
 } PACKED;
+/**
+ * \struct directoryVFATEntry
+ * \brief VFAT long filename directory entry
+ *
+ * directoryVFATEntries are found in the same list as normal directoryEntry.
+ * But have the attribute field set to DIR_ATT_LONG_NAME.
+ * 
+ * Long filenames are saved in multiple directoryVFATEntries.
+ * Each entry containing 13 UTF-16 characters.
+ */
 struct directoryVFATEntry {
-	uint8_t  sequenceNumber;
-	uint16_t name1[5];//UTF-16
-	uint8_t  attributes;
-	uint8_t  reservedNT;
-	uint8_t  checksum;
-	uint16_t name2[6];//UTF-16
-	uint16_t firstClusterLow;
-	uint16_t name3[2];//UTF-16
+  /**
+   * Sequence number. Consists of 2 parts:
+   *  bit 6:   indicates first long filename block for the next file
+   *  bit 0-4: the position of this long filename block (first block is 1)
+   */
+  uint8_t  sequenceNumber;
+  /** First set of UTF-16 characters */
+  uint16_t name1[5];//UTF-16
+  /** attributes (at the same location as in directoryEntry), always 0x0F */
+  uint8_t  attributes;
+  /** Reserved for use by Windows NT. Always 0. */
+  uint8_t  reservedNT;
+  /** Checksum of the short 8.3 filename, can be used to checked if the file system as modified by a not-long-filename aware implementation. */
+  uint8_t  checksum;
+  /** Second set of UTF-16 characters */
+  uint16_t name2[6];//UTF-16
+  /** firstClusterLow is always zero for longFilenames */
+  uint16_t firstClusterLow;
+  /** Third set of UTF-16 characters */
+  uint16_t name3[2];//UTF-16
 } PACKED;
 //------------------------------------------------------------------------------
 // Definitions for directory entries
 //
 /** Type name for directoryEntry */
 typedef struct directoryEntry dir_t;
+/** Type name for directoryVFATEntry */
+typedef struct directoryVFATEntry vfat_t;
 /** escape for name[0] = 0XE5 */
 uint8_t const DIR_NAME_0XE5 = 0X05;
 /** name[0] value for entry that is free after being "deleted" */

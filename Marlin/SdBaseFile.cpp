@@ -1117,7 +1117,6 @@ int8_t SdBaseFile::readDir(dir_t* dir, char* longFilename) {
   if (longFilename != NULL)
   {
   	longFilename[0] = '\0';
-  	longFilename[13*2] = '\0';
   }
 
   while (1) {
@@ -1127,12 +1126,15 @@ int8_t SdBaseFile::readDir(dir_t* dir, char* longFilename) {
     if (dir->name[0] == DIR_NAME_FREE) return 0;
     // skip empty entries and entry for .  and ..
     if (dir->name[0] == DIR_NAME_DELETED || dir->name[0] == '.') continue;
-    //Fill the long filename if we have a long filename entry (Note: Does not check the filename checksum)
+    //Fill the long filename if we have a long filename entry,
+	// long filename entries are stored before the actual filename.
 	if (DIR_IS_LONG_NAME(dir) && longFilename != NULL)
     {
-    	directoryVFATEntry *VFAT = (directoryVFATEntry*)dir;
-    	if (VFAT->firstClusterLow == 0 && (VFAT->sequenceNumber & 0x1F) > 0 && (VFAT->sequenceNumber & 0x1F) < 3)
+    	vfat_t *VFAT = (vfat_t*)dir;
+		//Sanity check the VFAT entry. The first cluster is always set to zero. And th esequence number should be higher then 0
+    	if (VFAT->firstClusterLow == 0 && (VFAT->sequenceNumber & 0x1F) > 0 && (VFAT->sequenceNumber & 0x1F) <= MAX_VFAT_ENTRIES)
     	{
+			//TODO: Store the filename checksum to verify if a none-long filename aware system modified the file table.
     		n = ((VFAT->sequenceNumber & 0x1F) - 1) * 13;
 			longFilename[n+0] = VFAT->name1[0];
 			longFilename[n+1] = VFAT->name1[1];
@@ -1147,6 +1149,7 @@ int8_t SdBaseFile::readDir(dir_t* dir, char* longFilename) {
 			longFilename[n+10] = VFAT->name2[5];
 			longFilename[n+11] = VFAT->name3[0];
 			longFilename[n+12] = VFAT->name3[1];
+			//If this VFAT entry is the last one, add a NUL terminator at the end of the string
 			if (VFAT->sequenceNumber & 0x40)
 				longFilename[n+13] = '\0';
 		}
