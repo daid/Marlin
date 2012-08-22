@@ -652,6 +652,7 @@ void MainMenu::update()
 	lastencoderpos = encoderpos;
 }
 
+//**********************************************************************************************************
 //  convert float to string with +123.4 format
 char *ftostr3(const float &x)
 {

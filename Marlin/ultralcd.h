@@ -46,6 +46,8 @@
     #define BLOCK {blocking[BL_MI]=millis()+blocktime;blocking[BL_ST]=millis()+blocktime;}
     
   #endif
+
+
     
   // blocking time for recognizing a new keypress of one key, ms
   #define blocktime 500
@@ -71,6 +73,8 @@
     void showControlRetract();
     void showAxisMove();
     void showSD();
+	void showPLAsettings();
+	void showABSsettings();
     bool force_lcd_update;
     long lastencoderpos;
     int8_t lineoffset;
