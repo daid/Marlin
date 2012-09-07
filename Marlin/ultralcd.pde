@@ -133,6 +133,18 @@ void lcd_init()
     B10001,
     B01110
   };
+  byte ulti[8] =
+  {
+    B01010,
+    B11111,
+    B10001,
+    B01110,
+    B11111,
+    B11111,
+    B01110,
+    B11111
+  };
+
   byte uplevel[8]={0x04, 0x0e, 0x1f, 0x04, 0x1c, 0x00, 0x00, 0x00};//thanks joris
   byte refresh[8]={0x00, 0x06, 0x19, 0x18, 0x03, 0x13, 0x0c, 0x00}; //thanks joris
   byte folder [8]={0x00, 0x1c, 0x1f, 0x11, 0x11, 0x1f, 0x00, 0x00}; //thanks joris
@@ -142,6 +154,8 @@ void lcd_init()
   lcd.createChar(3,uplevel);
   lcd.createChar(4,refresh);
   lcd.createChar(5,folder);
+  lcd.createChar(6,ulti);
+
   LCD_MESSAGEPGM(WELCOME_MSG);
 }
 
@@ -337,6 +351,7 @@ void MainMenu::showStatus()
     #elif EXTRUDERS > 1
       lcd.setCursor(10,0);lcdprintPGM("\002---/---\001 ");
     #endif
+
   }
     
   int tHotEnd0=intround(degHotend0());
@@ -435,7 +450,7 @@ void MainMenu::showStatus()
    lcd.setCursor(0,2);
    lcd.print(itostr3(curfeedmultiply));lcdprintPGM("% ");
   }
-  
+
   if(messagetext[0]!='\0')
   {
     lcd.setCursor(0,LCD_HEIGHT-1);
@@ -453,6 +468,9 @@ void MainMenu::showStatus()
      lcd.setCursor(10,2);
     lcd.print(itostr3((int)percent));
     lcdprintPGM("%SD");
+   if (percent>0) {lcd.setCursor(intround(percent/10)+10,0);lcdprintPGM("\006");}
+
+
   }
 #endif
 #else //smaller LCDS----------------------------------
@@ -528,7 +546,7 @@ void MainMenu::showPrepare()
       MENUITEM(  lcdprintPGM(MSG_DISABLE_STEPPERS)  ,  BLOCK;enquecommand("M84");beepshort(); ) ;
       break;
     case ItemP_home:
-      MENUITEM(  lcdprintPGM(MSG_AUTO_HOME)  ,  BLOCK;enquecommand("G28");beepshort(); ) ;
+      MENUITEM(  lcdprintPGM(MSG_AUTO_HOME)  ,  BLOCK;enquecommand("G28");enquecommand("G1 X0 Y0 Z5 E0");beepshort(); ) ;
       break;
     case ItemP_origin:
       MENUITEM(  lcdprintPGM(MSG_SET_ORIGIN)  ,  BLOCK;enquecommand("G92 X0 Y0 Z0");beepshort(); ) ;
