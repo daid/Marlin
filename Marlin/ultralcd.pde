@@ -451,6 +451,8 @@ void MainMenu::showStatus()
    lcd.print(itostr3(curfeedmultiply));lcdprintPGM("% ");
   }
 
+
+
   if(messagetext[0]!='\0')
   {
     lcd.setCursor(0,LCD_HEIGHT-1);
@@ -460,6 +462,9 @@ void MainMenu::showStatus()
       lcd.print(" ");
     messagetext[0]='\0';
   }
+  
+  
+  
 #ifdef SDSUPPORT
   static uint8_t oldpercent=101;
   uint8_t percent=card.percentDone();
@@ -468,8 +473,15 @@ void MainMenu::showStatus()
      lcd.setCursor(10,2);
     lcd.print(itostr3((int)percent));
     lcdprintPGM("%SD");
-   if (percent>0) {lcd.setCursor(intround(percent/10)+10,0);lcdprintPGM("\006");}
-
+  
+ if (percent>0) 
+       {
+          lcd.setCursor(0,LCD_HEIGHT-1); 
+          for(int8_t i=0;i<LCD_WIDTH;i++)
+            {
+             if (i <= (percent/(100/LCD_WIDTH))) lcdprintPGM("\006"); else lcdprintPGM(" "); 
+            }
+       }
 
   }
 #endif
@@ -508,6 +520,9 @@ void MainMenu::showStatus()
       lcd.print(" ");
     messagetext[0]='\0';
   }
+
+
+
 
 #endif
   force_lcd_update=false;
