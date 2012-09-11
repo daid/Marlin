@@ -106,7 +106,7 @@
 	#define MSG_DWELL "Sleep..."
 	#define MSG_USERWAIT "Wait for user..."
 	#define MSG_NO_MOVE "No move."
-	#define MSG_PART_RELEASE "Partial Release"
+	#define MSG_PART_RELEASE "Print finished."
 	#define MSG_KILLED "KILLED. "
 	#define MSG_STOPPED "STOPPED. "
 	#define MSG_STEPPER_RELEASED "Released."

@@ -1,3 +1,7 @@
+Explanation:
+------------
+This is a fork from diad/marlin V1.0. I created it to "play" with the firmware, so please be aware of this. I give no guarantee that this will work with your setup and you do it on your own risk!!!
+
 WARNING: 
 --------
 THIS IS RELEASE CANDIDATE 2 FOR MARLIN 1.0.0

@@ -3,3 +3,5 @@ applet/
 *~
 *.orig
 *.rej
+Configuration.h
+done.txt
