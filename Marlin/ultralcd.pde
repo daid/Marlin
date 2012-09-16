@@ -133,6 +133,18 @@ void lcd_init()
     B10001,
     B01110
   };
+  byte ulti[8] =
+  {
+    B01010,
+    B11111,
+    B10001,
+    B01110,
+    B11111,
+    B11111,
+    B01110,
+    B11111
+  };
+
   byte uplevel[8]={0x04, 0x0e, 0x1f, 0x04, 0x1c, 0x00, 0x00, 0x00};//thanks joris
   byte refresh[8]={0x00, 0x06, 0x19, 0x18, 0x03, 0x13, 0x0c, 0x00}; //thanks joris
   byte folder [8]={0x00, 0x1c, 0x1f, 0x11, 0x11, 0x1f, 0x00, 0x00}; //thanks joris
@@ -142,6 +154,8 @@ void lcd_init()
   lcd.createChar(3,uplevel);
   lcd.createChar(4,refresh);
   lcd.createChar(5,folder);
+  lcd.createChar(6,ulti);
+
   LCD_MESSAGEPGM(WELCOME_MSG);
 }
 
@@ -337,6 +351,7 @@ void MainMenu::showStatus()
     #elif EXTRUDERS > 1
       lcd.setCursor(10,0);lcdprintPGM("\002---/---\001 ");
     #endif
+
   }
     
   int tHotEnd0=intround(degHotend0());
@@ -395,7 +410,7 @@ void MainMenu::showStatus()
     lcd.setCursor(0,1);
     uint16_t time=millis()/60000-starttime/60000;
     
-    if(starttime!=oldtime)
+    if(starttime!=oldtime && card.sdprinting==true) //stop timer at the end of print!!
     {
       lcd.print(itostr2(time/60));lcdprintPGM("h ");lcd.print(itostr2(time%60));lcdprintPGM("m");
       oldtime=time;
@@ -435,7 +450,9 @@ void MainMenu::showStatus()
    lcd.setCursor(0,2);
    lcd.print(itostr3(curfeedmultiply));lcdprintPGM("% ");
   }
-  
+
+
+
   if(messagetext[0]!='\0')
   {
     lcd.setCursor(0,LCD_HEIGHT-1);
@@ -445,6 +462,9 @@ void MainMenu::showStatus()
       lcd.print(" ");
     messagetext[0]='\0';
   }
+  
+  
+  
 #ifdef SDSUPPORT
   static uint8_t oldpercent=101;
   uint8_t percent=card.percentDone();
@@ -453,6 +473,16 @@ void MainMenu::showStatus()
      lcd.setCursor(10,2);
     lcd.print(itostr3((int)percent));
     lcdprintPGM("%SD");
+  
+ if (percent>0) 
+       {
+          lcd.setCursor(0,LCD_HEIGHT-1); 
+          for(int8_t i=0;i<LCD_WIDTH;i++)
+            {
+             if (i <= (percent/(100/LCD_WIDTH))) lcdprintPGM("\006"); else lcdprintPGM(" "); 
+            }
+       }
+
   }
 #endif
 #else //smaller LCDS----------------------------------
@@ -491,6 +521,9 @@ void MainMenu::showStatus()
     messagetext[0]='\0';
   }
 
+
+
+
 #endif
   force_lcd_update=false;
 }
@@ -528,7 +561,7 @@ void MainMenu::showPrepare()
       MENUITEM(  lcdprintPGM(MSG_DISABLE_STEPPERS)  ,  BLOCK;enquecommand("M84");beepshort(); ) ;
       break;
     case ItemP_home:
-      MENUITEM(  lcdprintPGM(MSG_AUTO_HOME)  ,  BLOCK;enquecommand("G28");beepshort(); ) ;
+      MENUITEM(  lcdprintPGM(MSG_AUTO_HOME)  ,  BLOCK;enquecommand("G28");enquecommand("G1 X0 Y0 Z5 E0");beepshort(); ) ;
       break;
     case ItemP_origin:
       MENUITEM(  lcdprintPGM(MSG_SET_ORIGIN)  ,  BLOCK;enquecommand("G92 X0 Y0 Z0");beepshort(); ) ;
@@ -602,13 +635,16 @@ void MainMenu::showAxisMove()
                     if(linechanging)
                     {
 			enquecommand("G91");
+                        lcd.setCursor(19,line);lcdprintPGM("<");
                     }
                     else
                     {
 		      enquecommand("G90");
                       encoderpos=activeline*lcdslow;
                       beepshort();
+                      lcd.setCursor(19,line);lcdprintPGM(" ");
                     }
+                    
                     BLOCK;
                   }
                   if(linechanging)
@@ -647,12 +683,14 @@ void MainMenu::showAxisMove()
                     if(linechanging)
                     {
 			enquecommand("G91");
+                        lcd.setCursor(19,line);lcdprintPGM("<");
                     }
                     else
                     {
 		      enquecommand("G90");
                       encoderpos=activeline*lcdslow;
                       beepshort();
+                      lcd.setCursor(19,line);lcdprintPGM(" ");
                     }
                     BLOCK;
                   }
@@ -692,13 +730,16 @@ void MainMenu::showAxisMove()
                     if(linechanging)
                     {
 			enquecommand("G91");
+                        lcd.setCursor(19,line);lcdprintPGM("<");
+
                     }
                     else
                     {
 		      enquecommand("G90");
                       encoderpos=activeline*lcdslow;
                       beepshort();
-                    }
+                      lcd.setCursor(19,line);lcdprintPGM(" ");
+                  }
                     BLOCK;
                   }
                   if(linechanging)
@@ -771,10 +812,12 @@ void MainMenu::showTune()
         if(linechanging)
         {
             encoderpos=feedmultiply;
+            lcd.setCursor(19,line);lcdprintPGM("<");
         }
         else
         {
           encoderpos=activeline*lcdslow;
+          lcd.setCursor(19,line);lcdprintPGM(" ");
           beepshort();
         }
         BLOCK;
@@ -806,11 +849,13 @@ void MainMenu::showTune()
           if(linechanging)
           {
               encoderpos=intround(degTargetHotend0());
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             setTargetHotend0(encoderpos);
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
             beepshort();
           }
           BLOCK;
@@ -840,11 +885,13 @@ void MainMenu::showTune()
           if(linechanging)
           {
               encoderpos=intround(degTargetBed());
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             setTargetBed(encoderpos);
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
             beepshort();
           }
           BLOCK;
@@ -876,10 +923,12 @@ void MainMenu::showTune()
           if(linechanging)
           {
               encoderpos=FanSpeed;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
             beepshort();
           }
           BLOCK;
@@ -911,6 +960,7 @@ void MainMenu::showTune()
           if(linechanging)
           {
               encoderpos=(long)(axis_steps_per_unit[E_AXIS]*100.0);
+              lcd.setCursor(11,line);lcdprintPGM("<");
           }
           else
           {
@@ -919,7 +969,7 @@ void MainMenu::showTune()
             //current_position[E_AXIS]*=factor;
             axis_steps_per_unit[E_AXIS]= encoderpos/100.0;
             encoderpos=activeline*lcdslow;
-              
+            lcd.setCursor(11,line);lcdprintPGM(" ");  
           }
           BLOCK;
           beepshort();
@@ -1006,12 +1056,15 @@ void MainMenu::showControlTemp()
           if(linechanging)
           {
               encoderpos=intround(degTargetHotend0());
+              lcd.setCursor(19,line);lcdprintPGM("<");
+              
           }
           else
           {
             setTargetHotend0(encoderpos);
             encoderpos=activeline*lcdslow;
             beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
         }
@@ -1041,12 +1094,14 @@ void MainMenu::showControlTemp()
           if(linechanging)
           {
               encoderpos=intround(degTargetHotend1());
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             setTargetHotend1(encoderpos);
             encoderpos=activeline*lcdslow;
             beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
         }
@@ -1077,12 +1132,14 @@ void MainMenu::showControlTemp()
           if(linechanging)
           {
               encoderpos=intround(degTargetHotend2());
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             setTargetHotend1(encoderpos);
             encoderpos=activeline*lcdslow;
             beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
         }
@@ -1244,12 +1301,14 @@ void MainMenu::showControlTemp()
           if(linechanging)
           {
               encoderpos=intround(degTargetBed());
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             setTargetBed(encoderpos);
             encoderpos=activeline*lcdslow;
             beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
         }
@@ -1278,11 +1337,13 @@ void MainMenu::showControlTemp()
           if(linechanging)
           {
               encoderpos=FanSpeed;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             encoderpos=activeline*lcdslow;
             beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
         }
@@ -1314,11 +1375,13 @@ void MainMenu::showControlTemp()
           if(linechanging)
           {
               encoderpos=(long)Kp;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             Kp= encoderpos;
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
               
           }
           BLOCK;
@@ -1349,11 +1412,13 @@ void MainMenu::showControlTemp()
           if(linechanging)
           {
               encoderpos=(long)(Ki*10/PID_dT);
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             Ki= encoderpos/10.*PID_dT;
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
               
           }
           BLOCK;
@@ -1385,11 +1450,13 @@ void MainMenu::showControlTemp()
           if(linechanging)
           {
               encoderpos=(long)(Kd/5./PID_dT);
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             Kd= encoderpos;
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
               
           }
           BLOCK;
@@ -1421,12 +1488,13 @@ void MainMenu::showControlTemp()
           if(linechanging)
           {
               encoderpos=(long)Kc;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             Kc= encoderpos;
             encoderpos=activeline*lcdslow;
-              
+            lcd.setCursor(19,line);lcdprintPGM(" ");  
           }
           BLOCK;
           beepshort();
@@ -1497,11 +1565,13 @@ void MainMenu::showControlMotion()
           if(linechanging)
           {
               encoderpos=(long)acceleration/100;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             acceleration= encoderpos*100;
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
           beepshort();
@@ -1531,12 +1601,13 @@ void MainMenu::showControlMotion()
           if(linechanging)
           {
               encoderpos=(long)max_xy_jerk;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             max_xy_jerk= encoderpos;
             encoderpos=activeline*lcdslow;
-              
+            lcd.setCursor(19,line);lcdprintPGM(" ");  
           }
           BLOCK;
           beepshort();
@@ -1574,11 +1645,13 @@ void MainMenu::showControlMotion()
           if(linechanging)
           {
               encoderpos=(long)max_feedrate[i-ItemCM_vmaxx];
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             max_feedrate[i-ItemCM_vmaxx]= encoderpos;
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
               
           }
           BLOCK;
@@ -1610,12 +1683,13 @@ void MainMenu::showControlMotion()
           if(linechanging)
           {
               encoderpos=(long)(minimumfeedrate);
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             minimumfeedrate= encoderpos;
             encoderpos=activeline*lcdslow;
-              
+            lcd.setCursor(19,line);lcdprintPGM(" ");  
           }
           BLOCK;
           beepshort();
@@ -1645,11 +1719,13 @@ void MainMenu::showControlMotion()
           if(linechanging)
           {
               encoderpos=(long)mintravelfeedrate;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             mintravelfeedrate= encoderpos;
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
               
           }
           BLOCK;
@@ -1688,11 +1764,13 @@ void MainMenu::showControlMotion()
           if(linechanging)
           {
               encoderpos=(long)max_acceleration_units_per_sq_second[i-ItemCM_amaxx]/100;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             max_acceleration_units_per_sq_second[i-ItemCM_amaxx]= encoderpos*100;
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
           beepshort();
@@ -1724,11 +1802,13 @@ void MainMenu::showControlMotion()
           if(linechanging)
           {
               encoderpos=(long)retract_acceleration/100;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             retract_acceleration= encoderpos*100;
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
               
           }
           BLOCK;
@@ -1759,6 +1839,7 @@ void MainMenu::showControlMotion()
           if(linechanging)
           {
               encoderpos=(long)(axis_steps_per_unit[X_AXIS]*100.0);
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
@@ -1767,6 +1848,7 @@ void MainMenu::showControlMotion()
             //current_position[X_AXIS]*=factor;
             axis_steps_per_unit[X_AXIS]= encoderpos/100.0;
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
           beepshort();
@@ -1796,6 +1878,7 @@ void MainMenu::showControlMotion()
           if(linechanging)
           {
               encoderpos=(long)(axis_steps_per_unit[Y_AXIS]*100.0);
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
@@ -1804,6 +1887,7 @@ void MainMenu::showControlMotion()
             //current_position[Y_AXIS]*=factor;
             axis_steps_per_unit[Y_AXIS]= encoderpos/100.0;
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
               
           }
           BLOCK;
@@ -1834,6 +1918,7 @@ void MainMenu::showControlMotion()
           if(linechanging)
           {
               encoderpos=(long)(axis_steps_per_unit[Z_AXIS]*100.0);
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
@@ -1842,6 +1927,7 @@ void MainMenu::showControlMotion()
             //current_position[Z_AXIS]*=factor;
             axis_steps_per_unit[Z_AXIS]= encoderpos/100.0;
             encoderpos=activeline*lcdslow;
+            lcd.setCursor(19,line);lcdprintPGM(" ");
               
           }
           BLOCK;
@@ -1873,6 +1959,7 @@ void MainMenu::showControlMotion()
           if(linechanging)
           {
               encoderpos=(long)(axis_steps_per_unit[E_AXIS]*100.0);
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
@@ -1881,7 +1968,7 @@ void MainMenu::showControlMotion()
             //current_position[E_AXIS]*=factor;
             axis_steps_per_unit[E_AXIS]= encoderpos/100.0;
             encoderpos=activeline*lcdslow;
-              
+            lcd.setCursor(19,line);lcdprintPGM(" ");  
           }
           BLOCK;
           beepshort();
@@ -2306,8 +2393,8 @@ void MainMenu::showSD()
       {
         if(force_lcd_update)
         {
-          card.getfilename(i-FIRSTITEM);
-          //Serial.print("Filenr:");Serial.println(i-2);
+          card.getfilename(nrfiles + 1-i);
+          //Serial.print("Filenr:");Serial.println(nrfiles -i-2);
           lcd.setCursor(0,line);lcdprintPGM(" ");
           if(card.filenameIsDir) lcd.print("\005");
           if (card.longFilename[0])
@@ -2323,7 +2410,7 @@ void MainMenu::showSD()
         if((activeline==line) && CLICKED)
         {
           BLOCK
-          card.getfilename(i-FIRSTITEM);
+          card.getfilename(nrfiles +1-i);
           if(card.filenameIsDir)
           {
             for(int8_t i=0;i<strlen(card.filename);i++)
@@ -2545,7 +2632,7 @@ void MainMenu::update()
 
   switch(status)
   { 
-      case Main_Status: 
+      case Main_Status:
       {  
         showStatus();
         if(CLICKED)
@@ -2651,11 +2738,13 @@ void MainMenu::showPLAsettings()
           if(linechanging)
           {
 			  encoderpos=plaPreheatFanSpeed;
+                          lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             encoderpos=activeline*lcdslow;
             beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
         }
@@ -2685,11 +2774,13 @@ void MainMenu::showPLAsettings()
           if(linechanging)
           {
               encoderpos=plaPreheatHotendTemp;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             encoderpos=activeline*lcdslow;
             beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
         }
@@ -2719,11 +2810,13 @@ void MainMenu::showPLAsettings()
           if(linechanging)
           {
               encoderpos=plaPreheatHPBTemp;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             encoderpos=activeline*lcdslow;
             beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
         }
@@ -2797,11 +2890,13 @@ void MainMenu::showABSsettings()
           if(linechanging)
           {
 			  encoderpos=absPreheatFanSpeed;
+                          lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             encoderpos=activeline*lcdslow;
             beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
         }
@@ -2831,11 +2926,13 @@ void MainMenu::showABSsettings()
           if(linechanging)
           {
               encoderpos=absPreheatHotendTemp;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             encoderpos=activeline*lcdslow;
             beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
         }
@@ -2865,11 +2962,13 @@ void MainMenu::showABSsettings()
           if(linechanging)
           {
               encoderpos=absPreheatHPBTemp;
+              lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
           {
             encoderpos=activeline*lcdslow;
             beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
           }
           BLOCK;
         }
