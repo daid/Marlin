@@ -2393,7 +2393,7 @@ void MainMenu::showSD()
       {
         if(force_lcd_update)
         {
-          card.getfilename(nrfiles + 1-i);
+          card.getfilename((nrfiles-1) -(i-FIRSTITEM));
           //Serial.print("Filenr:");Serial.println(nrfiles -i-2);
           lcd.setCursor(0,line);lcdprintPGM(" ");
           if(card.filenameIsDir) lcd.print("\005");
@@ -2410,7 +2410,7 @@ void MainMenu::showSD()
         if((activeline==line) && CLICKED)
         {
           BLOCK
-          card.getfilename(nrfiles +1-i);
+          card.getfilename((nrfiles-1) -(i-FIRSTITEM));
           if(card.filenameIsDir)
           {
             for(int8_t i=0;i<strlen(card.filename);i++)
