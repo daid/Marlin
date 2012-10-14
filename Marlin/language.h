@@ -119,7 +119,7 @@
         #define MSG_SERIAL_ERROR_MENU_STRUCTURE "Something is wrong in the MenuStructure."
         #define MSG_COLOR " Change Color"
         #define MSG_COLOR_SET " Change Col:"
-        #define MSG_COLOR_RTN " Main \003"
+        #define MSG_COLOR_RTN " Watch \003"
         #define MSG_COLORHEIGHT_SET " Layer"
 // Serial Console Messages
 

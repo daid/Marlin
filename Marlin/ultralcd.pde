@@ -437,7 +437,7 @@ void MainMenu::showStatus()
     lcdprintPGM(" ");
   }
   //change color only if z layer is higher than threshold and also if not a origin (during preheat)
-  if (colchange && currentz>colchangeheight && position[1]!=0 && position[0]!=0)
+  if (colchange && currentz>=colchangeheight && position[1]!=0 && position[0]!=0)
   {
    enquecommand("G1 E-5 F6000");
    enquecommand("G1 X190 Y190 F9000");
@@ -2721,7 +2721,7 @@ void MainMenu::update()
       }break;
   }
   
-  if(timeoutToStatus<millis())
+  if(timeoutToStatus<millis() && status!=Sub_ColorChange)
     status=Main_Status;
   //force_lcd_update=false;
   lastencoderpos=encoderpos;
@@ -3049,7 +3049,7 @@ void MainMenu::showColorChange()
   {
 
 	case ItemColorChange_Exit:
-      MENUITEM(  lcdprintPGM(MSG_COLOR_RTN)  ,  BLOCK;status=Main_Menu;beepshort(); ) ;
+      MENUITEM(  lcdprintPGM(MSG_COLOR_RTN)  ,  BLOCK;status=Main_Status;beepshort(); ) ;
       break;
 
     case ItemColorchange_set:
