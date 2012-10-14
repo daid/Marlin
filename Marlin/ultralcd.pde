@@ -28,6 +28,8 @@ extern CardReader card;
 volatile char buttons=0;  //the last checked buttons in a bit array.
 long encoderpos=0;
 short lastenc=0;
+bool   colchange=false;
+long   colchangeheight=1;
 
 
 //===========================================================================
@@ -424,7 +426,26 @@ void MainMenu::showStatus()
     lcdprintPGM("Z:");lcd.print(ftostr52(current_position[2]));
     oldzpos=currentz;
   }
-  
+  if (colchange)
+  {
+   lcd.setCursor(19,1);
+    lcdprintPGM("C");
+  }
+  else 
+  {
+    lcd.setCursor(19,1);
+    lcdprintPGM(" ");
+  }
+  //change color only if z layer is higher than threshold and also if not a origin (during preheat)
+  if (colchange && currentz>colchangeheight && position[1]!=0 && position[0]!=0)
+  {
+   enquecommand("G1 E-5 F6000");
+   enquecommand("G1 X190 Y190 F9000");
+   enquecommand("M0");
+   colchange=false;
+   beepshort();
+   BLOCK;
+  }
   static int oldfeedmultiply=0;
   int curfeedmultiply=feedmultiply;
   
@@ -561,7 +582,7 @@ void MainMenu::showPrepare()
       MENUITEM(  lcdprintPGM(MSG_DISABLE_STEPPERS)  ,  BLOCK;enquecommand("M84");beepshort(); ) ;
       break;
     case ItemP_home:
-      MENUITEM(  lcdprintPGM(MSG_AUTO_HOME)  ,  BLOCK;enquecommand("G28");enquecommand("G1 X0 Y0 Z5 E0");beepshort(); ) ;
+      MENUITEM(  lcdprintPGM(MSG_AUTO_HOME)  ,  BLOCK;enquecommand("G28");beepshort(); ) ;
       break;
     case ItemP_origin:
       MENUITEM(  lcdprintPGM(MSG_SET_ORIGIN)  ,  BLOCK;enquecommand("G92 X0 Y0 Z0");beepshort(); ) ;
@@ -2458,7 +2479,7 @@ void MainMenu::showSD()
 }
 
 
-enum {ItemM_watch, ItemM_prepare, ItemM_control, ItemM_file, ItemM_pause};
+enum {ItemM_watch, ItemM_prepare, ItemM_control, ItemM_color, ItemM_file, ItemM_pause};
 void MainMenu::showMainMenu()
 {
 
@@ -2496,6 +2517,9 @@ void MainMenu::showMainMenu()
        
       case ItemM_control:
         MENUITEM(  lcdprintPGM(MSG_CONTROL_ARROW)  ,  BLOCK;status=Main_Control;beepshort(); ) ;
+      break;
+      case ItemM_color:
+        MENUITEM(  lcdprintPGM(MSG_COLOR)  ,  BLOCK; status=Sub_ColorChange; beepshort(); ) ;
       break;
       #ifdef SDSUPPORT
       case ItemM_file:    
@@ -2585,11 +2609,11 @@ void MainMenu::showMainMenu()
     line++;
   }
     
-    uint8_t numberOfLines = 4;
+    uint8_t numberOfLines = 5;
 #ifdef SDSUPPORT
-    numberOfLines = 4;
+    numberOfLines = 5;
 #else
-    numberOfLines = 3;
+    numberOfLines = 4;
 #endif
     updateActiveLines(numberOfLines,encoderpos);
 }
@@ -2690,6 +2714,10 @@ void MainMenu::update()
 	  case Sub_PreheatABSSettings: 
       {
         showABSsettings();
+      }break;
+          case Sub_ColorChange: 
+      {
+        showColorChange();
       }break;
   }
   
@@ -3002,6 +3030,98 @@ void MainMenu::showABSsettings()
  updateActiveLines(ItemABSPreHeat_Store_Eprom,encoderpos);
 #endif
 }
+
+
+enum {
+	ItemColorChange_Exit, 
+	ItemColorchange_set, 
+	ItemColorchangeheight_set
+	};
+
+void MainMenu::showColorChange()
+{
+#ifdef ULTIPANEL
+ uint8_t line=0;
+ clearIfNecessary();
+ for(int8_t i=lineoffset;i<lineoffset+LCD_HEIGHT;i++)
+ {
+  switch(i)
+  {
+
+	case ItemColorChange_Exit:
+      MENUITEM(  lcdprintPGM(MSG_COLOR_RTN)  ,  BLOCK;status=Main_Menu;beepshort(); ) ;
+      break;
+
+    case ItemColorchange_set:
+       {
+        if(force_lcd_update)
+        {
+          lcd.setCursor(0,line);lcdprintPGM(MSG_COLOR_SET);
+          lcd.setCursor(13,line); 
+          if (colchange) lcdprintPGM("Yes"); else lcdprintPGM("No ") ;
+        }
+        
+        if((activeline!=line) )
+          break;
+        
+        if(CLICKED) 
+        {
+        colchange = !colchange;
+        lcd.setCursor(13,line); 
+        if (colchange) lcdprintPGM("Yes"); else lcdprintPGM("No ") ;
+        
+        BLOCK;
+        }
+      }break;
+
+    case ItemColorchangeheight_set:
+      {
+        if(force_lcd_update)
+        {
+           lcd.setCursor(0,line);lcdprintPGM(MSG_COLORHEIGHT_SET);
+          lcd.setCursor(10,line);
+          lcdprintPGM("Z:");lcd.print(ftostr52( float(colchangeheight)/100));
+        } 
+        
+        if((activeline!=line) )
+          break;
+        
+        if(CLICKED)
+        {
+          linechanging=!linechanging;
+          if(linechanging)
+          {
+              encoderpos=colchangeheight;
+              lcd.setCursor(19,line);lcdprintPGM("<");
+          }
+          else
+          {
+            encoderpos=activeline*lcdslow;
+            beepshort();
+            lcd.setCursor(19,line);lcdprintPGM(" ");
+          }
+          BLOCK;
+        }
+        if(linechanging)
+        {
+          if(encoderpos<0) encoderpos=0;
+          if(encoderpos>9999) encoderpos=9999;
+		  colchangeheight = encoderpos;
+          lcd.setCursor(12,line);lcd.print(ftostr52( float(colchangeheight)/100));
+        }
+      }break;
+
+
+      default:   
+      break;
+  }
+  line++;
+ }
+updateActiveLines(3,encoderpos);
+#endif
+}
+
+
 
 //**********************************************************************************************************
 //  convert float to string with +123.4 format
