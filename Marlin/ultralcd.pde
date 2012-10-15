@@ -28,8 +28,8 @@ extern CardReader card;
 volatile char buttons=0;  //the last checked buttons in a bit array.
 long encoderpos=0;
 short lastenc=0;
-bool   colchange=false;
-long   colchangeheight=1;
+bool   autopause=false;
+long   autopauseheight=1;
 
 
 //===========================================================================
@@ -454,23 +454,23 @@ void MainMenu::showStatus()
     lcdprintPGM("Z:");lcd.print(ftostr52(current_position[2]));
     oldzpos=currentz;
   }
-  if (colchange)
+  if (autopause)
   {
    lcd.setCursor(19,1);
-    lcdprintPGM("C");
+    lcdprintPGM("P");
   }
   else 
   {
     lcd.setCursor(19,1);
     lcdprintPGM(" ");
   }
-  //change color only if z layer is higher than threshold and also if not a origin (during preheat)
-  if (colchange && currentz>=colchangeheight && position[1]!=0 && position[0]!=0)
+  //autopause only if z layer is higher than threshold and also if not a origin (during preheat)
+  if (autopause && currentz>=autopauseheight && position[1]!=0 && position[0]!=0)
   {
    enquecommand("G1 E-5 F6000");
    enquecommand("G1 X190 Y190 F9000");
    enquecommand("M0");
-   colchange=false;
+   autopause=false;
    beepshort();
    BLOCK;
   }
@@ -2507,7 +2507,7 @@ void MainMenu::showSD()
 }
 
 
-enum {ItemM_watch, ItemM_prepare, ItemM_control, ItemM_color, ItemM_file, ItemM_pause};
+enum {ItemM_watch, ItemM_prepare, ItemM_control, ItemM_autopause, ItemM_file, ItemM_pause};
 void MainMenu::showMainMenu()
 {
 
@@ -2546,8 +2546,8 @@ void MainMenu::showMainMenu()
       case ItemM_control:
         MENUITEM(  lcdprintPGM(MSG_CONTROL_ARROW)  ,  BLOCK;status=Main_Control;beepshort(); ) ;
       break;
-      case ItemM_color:
-        MENUITEM(  lcdprintPGM(MSG_COLOR)  ,  BLOCK; status=Sub_ColorChange; beepshort(); ) ;
+      case ItemM_autopause:
+        MENUITEM(  lcdprintPGM(MSG_AUTOPAUSE)  ,  BLOCK; status=Sub_Autopause; beepshort(); ) ;
       break;
       #ifdef SDSUPPORT
       case ItemM_file:    
@@ -2743,13 +2743,13 @@ void MainMenu::update()
       {
         showABSsettings();
       }break;
-          case Sub_ColorChange: 
+          case Sub_Autopause: 
       {
-        showColorChange();
+        showAutopause();
       }break;
   }
   
-  if(timeoutToStatus<millis() && status!=Sub_ColorChange)
+  if(timeoutToStatus<millis() && status!=Sub_Autopause)
     status=Main_Status;
   //force_lcd_update=false;
   lastencoderpos=encoderpos;
@@ -3061,12 +3061,12 @@ void MainMenu::showABSsettings()
 
 
 enum {
-	ItemColorChange_Exit, 
-	ItemColorchange_set, 
-	ItemColorchangeheight_set
+	ItemAutopause_Exit, 
+	ItemAutopause_set, 
+	ItemAutopauseheight_set
 	};
 
-void MainMenu::showColorChange()
+void MainMenu::showAutopause()
 {
 #ifdef ULTIPANEL
  uint8_t line=0;
@@ -3076,17 +3076,17 @@ void MainMenu::showColorChange()
   switch(i)
   {
 
-	case ItemColorChange_Exit:
-      MENUITEM(  lcdprintPGM(MSG_COLOR_RTN)  ,  BLOCK;status=Main_Status;beepshort(); ) ;
+	case ItemAutopause_Exit:
+      MENUITEM(  lcdprintPGM(MSG_AUTOPAUSE_RTN)  ,  BLOCK;status=Main_Status;beepshort(); ) ;
       break;
 
-    case ItemColorchange_set:
+    case ItemAutopause_set:
        {
         if(force_lcd_update)
         {
-          lcd.setCursor(0,line);lcdprintPGM(MSG_COLOR_SET);
+          lcd.setCursor(0,line);lcdprintPGM(MSG_AUTOPAUSE_SET);
           lcd.setCursor(13,line); 
-          if (colchange) lcdprintPGM("Yes"); else lcdprintPGM("No ") ;
+          if (autopause) lcdprintPGM("Yes"); else lcdprintPGM("No ") ;
         }
         
         if((activeline!=line) )
@@ -3094,21 +3094,21 @@ void MainMenu::showColorChange()
         
         if(CLICKED) 
         {
-        colchange = !colchange;
+        autopause = !autopause;
         lcd.setCursor(13,line); 
-        if (colchange) lcdprintPGM("Yes"); else lcdprintPGM("No ") ;
+        if (autopause) lcdprintPGM("Yes"); else lcdprintPGM("No ") ;
         
         BLOCK;
         }
       }break;
 
-    case ItemColorchangeheight_set:
+    case ItemAutopauseheight_set:
       {
         if(force_lcd_update)
         {
-           lcd.setCursor(0,line);lcdprintPGM(MSG_COLORHEIGHT_SET);
+           lcd.setCursor(0,line);lcdprintPGM(MSG_AUTOPAUSEHEIGHT_SET);
           lcd.setCursor(10,line);
-          lcdprintPGM("Z:");lcd.print(ftostr52( float(colchangeheight)/100));
+          lcdprintPGM("Z:");lcd.print(ftostr52( float(autopauseheight)/100));
         } 
         
         if((activeline!=line) )
@@ -3119,7 +3119,7 @@ void MainMenu::showColorChange()
           linechanging=!linechanging;
           if(linechanging)
           {
-              encoderpos=colchangeheight;
+              encoderpos=autopauseheight;
               lcd.setCursor(19,line);lcdprintPGM("<");
           }
           else
@@ -3134,8 +3134,8 @@ void MainMenu::showColorChange()
         {
           if(encoderpos<0) encoderpos=0;
           if(encoderpos>9999) encoderpos=9999;
-		  colchangeheight = encoderpos;
-          lcd.setCursor(12,line);lcd.print(ftostr52( float(colchangeheight)/100));
+		  autopauseheight = encoderpos;
+          lcd.setCursor(12,line);lcd.print(ftostr52( float(autopauseheight)/100));
         }
       }break;
 
