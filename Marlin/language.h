@@ -117,7 +117,10 @@
 	#define MSG_CONTROL_RETRACT_RECOVERF " UnRet  F:"
 	#define MSG_AUTORETRACT " AutoRetr.:"
         #define MSG_SERIAL_ERROR_MENU_STRUCTURE "Something is wrong in the MenuStructure."
-
+        #define MSG_AUTOPAUSE " Auto-Pause \x7E"
+        #define MSG_AUTOPAUSE_SET " Auto-Pause:"
+        #define MSG_AUTOPAUSE_RTN " Watch \003"
+        #define MSG_AUTOPAUSEHEIGHT_SET " Height"
 // Serial Console Messages
 
 	#define MSG_Enqueing "enqueing \""
