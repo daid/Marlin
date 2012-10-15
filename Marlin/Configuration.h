@@ -5,53 +5,8 @@
 #define BAUDRATE 250000
 #define __ARDUINO_NR__ 4
 #define EXTRUDERS 1
-<<<<<<< HEAD
 #define MINIMUM_PLANNER_SPEED 0.05
 #define MOTHERBOARD 7
-=======
-
-// Frequency limit
-// See nophead's blog for more info
-// Not working O
-//#define XY_FREQUENCY_LIMIT  15
-
-// Minimum planner junction speed. Sets the default minimum speed the planner plans for at the end
-// of the buffer and all stops. This should not be much greater than zero and should only be changed
-// if unwanted behavior is observed on a user's machine when running at very slow speeds.
-#define MINIMUM_PLANNER_SPEED 2.0 // (mm/sec)
-
-// BASIC SETTINGS: select your board type, thermistor type, axis scaling, and endstop configuration
-
-//// The following define selects which electronics board you have. Please choose the one that matches your setup
-// MEGA/RAMPS up to 1.2 = 3,
-// RAMPS 1.3 = 33
-// Gen6 = 5,
-// Sanguinololu 1.2 and above = 62
-// Ultimaker = 7,
-// Teensylu = 8
-#define MOTHERBOARD 33
-
-//===========================================================================
-//=============================Thermal Settings  ============================
-//===========================================================================
-
-//// Thermistor settings:
-// 1 is 100k thermistor
-// 2 is 200k thermistor
-// 3 is mendel-parts thermistor
-// 4 is 10k thermistor
-// 5 is ParCan supplied 104GT-2 100K
-// 6 is EPCOS 100k
-// 7 is 100k Honeywell thermistor 135-104LAG-J01
-
-//#define THERMISTORHEATER_0 3
-//#define THERMISTORHEATER_1 1
-//#define THERMISTORHEATER_2 1
-
-//#define HEATER_0_USES_THERMISTOR
-//#define HEATER_1_USES_THERMISTOR
-//#define HEATER_2_USES_THERMISTOR
->>>>>>> origin/origin/Marlin_v1
 #define HEATER_0_USES_AD595
 #define HEATER_0_MINTEMP 5
 #define HEATER_0_MAXTEMP 275
@@ -139,7 +94,6 @@ const bool Z_ENDSTOPS_INVERTING = true;
 #define DEFAULT_STEPPER_DEACTIVE_COMMAND "M84 X Y E"
 #define EEPROM_SETTINGS
 #define EEPROM_CHITCHAT
-<<<<<<< HEAD
 #define SDSUPPORT
 #define SD_FINISHED_STEPPERRELEASE true
 #define SD_FINISHED_RELEASECOMMAND "M84 X Y E"
@@ -155,65 +109,6 @@ const bool Z_ENDSTOPS_INVERTING = true;
 #define ABS_PREHEAT_HOTEND_TEMP 240
 #define ABS_PREHEAT_HPB_TEMP 100
 #define ABS_PREHEAT_FAN_SPEED 255
-=======
-
-
-// The hardware watchdog should halt the Microcontroller, in case the firmware gets stuck somewhere. However:
-// the Watchdog is not working well, so please only enable this for testing
-// this enables the watchdog interrupt.
-//#define USE_WATCHDOG
-//#ifdef USE_WATCHDOG
-  // you cannot reboot on a mega2560 due to a bug in he bootloader. Hence, you have to reset manually, and this is done hereby:
-//#define RESET_MANUAL
-//#define WATCHDOG_TIMEOUT 4  //seconds
-//#endif
-
-// extruder advance constant (s2/mm3)
-//
-// advance (steps) = STEPS_PER_CUBIC_MM_E * EXTUDER_ADVANCE_K * cubic mm per second ^ 2
-//
-// hooke's law says:		force = k * distance
-// bernoulli's priniciple says:	v ^ 2 / 2 + g . h + pressure / density = constant
-// so: v ^ 2 is proportional to number of steps we advance the extruder
-#define ADVANCE
-
-#ifdef ADVANCE
-  #define EXTRUDER_ADVANCE_K .0
-
-  #define D_FILAMENT 2.85
-  #define STEPS_MM_E 836
-  #define EXTRUTION_AREA (0.25 * D_FILAMENT * D_FILAMENT * 3.14159)
-  #define STEPS_PER_CUBIC_MM_E (axis_steps_per_unit[E_AXIS]/ EXTRUTION_AREA)
-
-#endif // ADVANCE
-
-
-//LCD and SD support
-//#define ULTRA_LCD  //general lcd support, also 16x2
-//#define SDSUPPORT // Enable SD Card Support in Hardware Console
-#define SD_FINISHED_STEPPERRELEASE true  //if sd support and the file is finished: disable steppers?
-#define SD_FINISHED_RELEASECOMMAND "M84 X Y E" // no z because of layer shift.
-
-//#define ULTIPANEL
-#ifdef ULTIPANEL
-  //#define NEWPANEL  //enable this if you have a click-encoder panel
-  #define SDSUPPORT
-  #define ULTRA_LCD
-  #define LCD_WIDTH 20
-  #define LCD_HEIGHT 4
-#else //no panel but just lcd 
-  #ifdef ULTRA_LCD
-    #define LCD_WIDTH 16
-    #define LCD_HEIGHT 2
-  #endif
-#endif
-
-// A debugging feature to compare calculated vs performed steps, to see if steps are lost by the software.
-//#define DEBUG_STEPS
-
-
-// Arc interpretation settings:
->>>>>>> origin/origin/Marlin_v1
 #define MM_PER_ARC_SEGMENT 1
 #define N_ARC_CORRECTION 25
 #define PREVENT_DANGEROUS_EXTRUDE
